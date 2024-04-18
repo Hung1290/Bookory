@@ -1,32 +1,121 @@
-import { useState } from 'react'
-import { Counter } from './redux/counter/Counter'
+import { Outlet, RouterProvider, createBrowserRouter } from "react-router-dom";
+import Home from "./pages/Home";
+import NotFound from "./components/NotFound";
+import './assets/styles/reset.scss'
+import './assets/styles/global.scss'
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Book from "./pages/Book";
+import Header from "./components/Header";
+import Footer from "./components/Footer";
+import LayoutAdmin from "./components/Admin/Layout";
+import { useSelector } from "react-redux";
+import Loading from "./components/Loading";
+import ProtectedRoute from "./components/ProtectedRoute";
+import UserTable from "./pages/Admin/user/UserTable";
+import BookTable from "./pages/Admin/book/BookTable";
+import Order from "./pages/Order";
+import OrderHistory from "./pages/OrderHistory";
+import History from "./pages/Admin/order/History";
+import { useState } from "react";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [searchTerm, setSearchTerm] = useState('')
+  const isLoading = useSelector(state => state.account.isAuthenticated)
+
+  const Layout = () => {
+    return (
+      <div >
+        <Header searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+        <div style={{ minHeight: '81vh', backgroundColor: '#efefef', padding: '20px 0' }}>
+          <Outlet context={[searchTerm, setSearchTerm]} />
+        </div>
+        <Footer style={{ backgroundColor: '#f5f5f5' }} />
+      </div>
+    )
+  }
+
+  const router = createBrowserRouter([
+    {
+      path: "/",
+      element: <Layout />,
+      errorElement: <NotFound />,
+      children: [
+        {
+          index: true,
+          element: <Home />,
+        },
+        {
+          path: "book/:slug",
+          element: <Book />,
+        },
+        {
+          path: "order",
+          element:
+            <ProtectedRoute>
+              <Order />
+            </ProtectedRoute>
+          ,
+        },
+        {
+          path: "history",
+          element:
+            <ProtectedRoute>
+              <OrderHistory />
+            </ProtectedRoute>
+          ,
+        }
+      ]
+    },
+    {
+      path: "/admin",
+      element: <LayoutAdmin />,
+      errorElement: <NotFound />,
+      children: [
+        {
+          index: true,
+          element:
+            <ProtectedRoute>
+              <UserTable />
+            </ProtectedRoute>
+        },
+        {
+          path: 'book',
+          element:
+            <ProtectedRoute>
+              <BookTable />
+            </ProtectedRoute>
+        },
+        {
+          path: 'order',
+          element:
+            <ProtectedRoute>
+              <History />
+            </ProtectedRoute>
+        }
+      ]
+    },
+    {
+      path: "/login",
+      element: <Login />,
+    },
+    {
+      path: "/register",
+      element: <Register />,
+    },
+  ]);
 
   return (
     <>
-      {/* <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p> */}
-      <Counter />
+      {isLoading === true
+        || location.pathname === '/login'
+        || location.pathname === '/register'
+        || location.pathname === '/'
+        ?
+        <RouterProvider router={router} />
+        :
+        <Loading />
+      }
     </>
   )
 }
