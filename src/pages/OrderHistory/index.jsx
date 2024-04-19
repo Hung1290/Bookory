@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Table, Tag } from 'antd';
 import { callFetchOrderHistory } from '../../services/api';
-import ReactJson from 'react-json-view'
 import { useSelector } from 'react-redux';
 
 const OrderHistory = () => {
@@ -47,11 +46,7 @@ const OrderHistory = () => {
                 <Tag color={'green'}>
                     Thành công
                 </Tag>
-        },
-        {
-            title: 'Chi tiết',
-            render: (record) => <ReactJson name='Chi tiết đơn hàng' src={record.detailOrder} collapsed={true} />,
-        },
+        }
     ];
 
     return (
